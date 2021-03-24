@@ -1,17 +1,16 @@
 package me.sbolsec.pwdmgr;
 
+import me.sbolsec.pwdmgr.data.Vault;
+
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Simple password manager which provides methods
@@ -21,46 +20,23 @@ import java.util.Map;
  */
 public class Main {
 
+    /** Path to the storage file on the disk */
+    private static final Path storagePath = Path.of("./.storage");
+
     /**
-     * Initializes storage for [address, password] pairs using
-     * provided master password.
+     * Initializes storage for [address, password] pairs using provided master password.
      * @param masterPassword master password used to initialize storage
      */
     public static void init(String masterPassword) throws NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException, IOException {
-        Utils.checkAndCreateStorage();
-
+        // Generate needed values
         byte[] salt = Utils.generateSalt();
         IvParameterSpec iv = Utils.generateIv();
         SecretKey key = Utils.getKeyFromPassword(masterPassword, salt);
 
-        ByteArrayOutputStream byteMap = new ByteArrayOutputStream();
-        ObjectOutputStream out = new ObjectOutputStream(byteMap);
-        HashMap<String, String> dummy = new HashMap<>();
-        dummy.put("test", "marko");
-        out.writeObject(dummy);
-        out.close();
-        byte[] bytes = byteMap.toByteArray();
-        byteMap.close();
+        // initialize the storage with an empty map and save it on the disk
+        Utils.encryptAndSaveToDisk(storagePath, new HashMap<String, String>(), iv, salt, key);
 
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-        byte[] storage = cipher.doFinal(bytes);
-
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(key);
-        byte[] integrity = mac.doFinal(storage);
-
-        Data data = new Data(storage, iv.getIV(), salt, integrity);
-
-        String fileName = Utils.generateFileName();
-        Path filePath = Path.of("./.storage/" + fileName);
-        Files.createFile(filePath);
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toString()))) {
-            oos.writeObject(data);
-            oos.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        System.out.println("Password manager initialized.");
     }
 
     /**
@@ -70,8 +46,22 @@ public class Main {
      * @param address address to add
      * @param password password to add
      */
-    public static void put(String masterPassword, String address, String password) {
+    public static void put(String masterPassword, String address, String password) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException {
+        // Get the vault from the disk
+        Vault vault = Utils.getVault(storagePath, masterPassword);
 
+        // Add the [address, password] pair
+        vault.getVault().put(address, password);
+
+        // Generate needed values
+        byte[] salt = Utils.generateSalt();
+        IvParameterSpec iv = Utils.generateIv();
+        SecretKey key = Utils.getKeyFromPassword(masterPassword, salt);
+
+        // encrypt the vault and save it do disk
+        Utils.encryptAndSaveToDisk(storagePath, vault.getVault(), iv, salt, key);
+
+        System.out.println("Stored password for " + address);
     }
 
     /**
@@ -80,8 +70,17 @@ public class Main {
      * @param masterPassword master password
      * @param address address for which to return password
      */
-    public static void get(String masterPassword, String address) {
+    public static void get(String masterPassword, String address) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException {
+        // Get the vault from the disk
+        Vault vault = Utils.getVault(storagePath, masterPassword);
 
+        // Get the password
+        String pass = vault.getVault().get(address);
+
+        if (pass != null)
+            System.out.println("Password for " + address + " is: " + pass);
+        else
+            System.out.println("There is no password stored for " + address);
     }
 
     /**
@@ -95,65 +94,35 @@ public class Main {
         System.exit(1);
     }
 
-    public static void test(String masterPassword) {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./.storage/5368021497"))) {
-            // Read data from file
-            Data data = (Data) ois.readObject();
-
-            // Generate key from master password
-            SecretKey key = Utils.getKeyFromPassword(masterPassword, data.getSalt());
-
-            // Check the integrity
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(key);
-            byte[] integrity = mac.doFinal(data.getVault());
-            boolean equals = Arrays.equals(integrity, data.getIntegrity());
-
-            // Decrypt the data
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(data.getIv()));
-            byte[] vault = cipher.doFinal(data.getVault());
-
-            // Turn byte array into useful object
-            ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(vault));
-            Map<String, String> asd = (Map<String, String>) is.readObject();
-            is.close();
-
-            // Do stuff
-            System.out.println("");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Starting point of program.
      * Calls required method based on command line arguments.
      * @param args command line arguments
      */
-    public static void main(String[] args) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, NoSuchPaddingException, IOException {
-        // check the args
-        test(args[1]);
-
+    public static void main(String[] args) {
         int len = args.length;
         if (len < 2 || len > 4) printErrorMessageAndTerminate();
 
         // call the required method
-        switch (args[0].toLowerCase()) {
-            case "init":
-                if (len != 2) printErrorMessageAndTerminate();
-                init(args[1]);
-                break;
-            case "put":
-                if (len != 4) printErrorMessageAndTerminate();
-                put(args[1], args[2], args[3]);
-                break;
-            case "get":
-                if (len != 3) printErrorMessageAndTerminate();
-                get(args[1], args[2]);
-                break;
-            default:
-                printErrorMessageAndTerminate();
+        try {
+            switch (args[0].toLowerCase()) {
+                case "init":
+                    if (len != 2) printErrorMessageAndTerminate();
+                    init(args[1]);
+                    break;
+                case "put":
+                    if (len != 4) printErrorMessageAndTerminate();
+                    put(args[1], args[2], args[3]);
+                    break;
+                case "get":
+                    if (len != 3) printErrorMessageAndTerminate();
+                    get(args[1], args[2]);
+                    break;
+                default:
+                    printErrorMessageAndTerminate();
+            }
+        } catch (Exception e) {
+            System.out.println("Wrong password!");
         }
     }
 }
