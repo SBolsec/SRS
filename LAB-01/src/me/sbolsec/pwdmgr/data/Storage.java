@@ -11,22 +11,26 @@ public class Storage implements Serializable {
     private byte[] vault;
     /** Initialization vector */
     private byte[] iv;
-    /** Salt */
-    private byte[] salt;
+    /** Salt used to generate key */
+    private byte[] keySalt;
+    /** Salt used to generate key for hmac */
+    private byte[] hmacSalt;
     /** Integrity calculated on all the other private members */
     private byte[] integrity;
 
     /**
-     * Constructor.
-     * @param vault encrypted map of [address, password] pairs
+     * Construcotr.
+     * @param vault encrypted data
      * @param iv initialization vector
-     * @param salt salt
-     * @param integrity integrity of the storage
+     * @param keySalt salt used to generate key
+     * @param hmacSalt salt used to generate key for hmac
+     * @param integrity integrity
      */
-    public Storage(byte[] vault, byte[] iv, byte[] salt, byte[] integrity) {
+    public Storage(byte[] vault, byte[] iv, byte[] keySalt, byte[] hmacSalt, byte[] integrity) {
         this.vault = vault;
         this.iv = iv;
-        this.salt = salt;
+        this.keySalt = keySalt;
+        this.hmacSalt = hmacSalt;
         this.integrity = integrity;
     }
 
@@ -47,11 +51,19 @@ public class Storage implements Serializable {
     }
 
     /**
-     * Returns the salt.
-     * @return salt
+     * Return the key salt
+     * @return key salt
      */
-    public byte[] getSalt() {
-        return salt;
+    public byte[] getKeySalt() {
+        return keySalt;
+    }
+
+    /**
+     * Returns the hmac salt
+     * @return hmac salt
+     */
+    public byte[] getHmacSalt() {
+        return hmacSalt;
     }
 
     /**

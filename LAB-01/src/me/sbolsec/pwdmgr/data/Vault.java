@@ -10,22 +10,26 @@ public class Vault {
     private Map<String, String> vault;
     /** Initialization vector */
     private byte[] iv;
-    /** Salt */
-    private byte[] salt;
+    /** Salt used to generate key */
+    private byte[] keySalt;
+    /** Salt used to generate key for hmac */
+    private byte[] hmacSalt;
     /** Integrity calculated on all the other private members */
     private byte[] integrity;
 
     /**
      * Constructor.
-     * @param vault map of [address, password]
+     * @param vault map of [address, password] pairs
      * @param iv initialization vector
-     * @param salt salt
+     * @param keySalt key salt
+     * @param hmacSalt hmac salt
      * @param integrity integrity
      */
-    public Vault(Map<String, String> vault, byte[] iv, byte[] salt, byte[] integrity) {
+    public Vault(Map<String, String> vault, byte[] iv, byte[] keySalt, byte[] hmacSalt, byte[] integrity) {
         this.vault = vault;
         this.iv = iv;
-        this.salt = salt;
+        this.keySalt = keySalt;
+        this.hmacSalt = hmacSalt;
         this.integrity = integrity;
     }
 
@@ -38,19 +42,19 @@ public class Vault {
     }
 
     /**
-     * Returns the initialization vector.
-     * @return initialization vector
+     * Return the key salt
+     * @return key salt
      */
-    public byte[] getIv() {
-        return iv;
+    public byte[] getKeySalt() {
+        return keySalt;
     }
 
     /**
-     * Returns the salt.
-     * @return salt
+     * Returns the hmac salt
+     * @return hmac salt
      */
-    public byte[] getSalt() {
-        return salt;
+    public byte[] getHmacSalt() {
+        return hmacSalt;
     }
 
     /**

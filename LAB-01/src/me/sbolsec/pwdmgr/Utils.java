@@ -63,10 +63,10 @@ public class Utils {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */
-    public static SecretKey getKeyFromPassword(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static SecretKey getKeyFromPassword(String algorithm, String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65537, 256);
-        SecretKey key = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+        SecretKey key = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), algorithm);
         return key;
     }
 
@@ -123,18 +123,20 @@ public class Utils {
      * using the provided key.
      * @param data data
      * @param iv initialization vector
-     * @param salt salt
+     * @param keySalt key salt
+     * @param hmacSalt hmac salt
      * @param key key
      * @return integrity
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
      */
-    public static byte[] calculateIntegrity(byte[] data, byte[] iv, byte[] salt, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static byte[] calculateIntegrity(byte[] data, byte[] iv, byte[] keySalt, byte[] hmacSalt, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException {
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(key);
         mac.update(data);
         mac.update(iv);
-        mac.update(salt);
+        mac.update(keySalt);
+        mac.update(hmacSalt);
         byte[] integrity = mac.doFinal();
         return integrity;
     }
@@ -144,13 +146,19 @@ public class Utils {
      * @param path file to which to write
      * @param object object which to write
      */
-    public static void writeObjectToDisk(Path path, Object object) {
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toString()))) {
-            oos.writeObject(object);
-            oos.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void writeObjectToDisk(Path path, Object object) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(object);
+        oos.flush();
+        byte[] data = bos.toByteArray();
+        oos.close();
+        bos.close();
+
+        FileOutputStream fos = new FileOutputStream(path.toString());
+        fos.write(data);
+        fos.flush();
+        fos.close();
     }
 
     /**
@@ -161,10 +169,17 @@ public class Utils {
      * @throws ClassNotFoundException
      */
     public static Object readObjectFromDisk(Path path) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toString()));
+        FileInputStream fis = new FileInputStream(path.toString());
+        byte[] data = fis.readAllBytes();
+        fis.close();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        ObjectInputStream ois = new ObjectInputStream(bis);
+
         Object obj = ois.readObject();
         int available = ois.available();
         ois.close();
+        bis.close();
 
         if (available != 0) {
             System.out.println("File has been tampered with!");
@@ -189,43 +204,12 @@ public class Utils {
     }
 
     /**
-     * Encrypts vault and saves it to the disk
-     * @param storagePath path to file
-     * @param vault vault to be encrypted
-     * @param masterPassword master password
-     * @throws NoSuchPaddingException
-     * @throws InvalidAlgorithmParameterException
-     * @throws NoSuchAlgorithmException
+     * Saves storage to disk
+     * @param storagePath
+     * @param storage
      * @throws IOException
-     * @throws BadPaddingException
-     * @throws IllegalBlockSizeException
-     * @throws InvalidKeyException
      */
-    public static void encryptVaultAndSaveToDisk(Path storagePath, Vault vault, String masterPassword) throws NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeyException, InvalidKeySpecException {
-        SecretKey key = getKeyFromPassword(masterPassword, vault.getSalt());
-        encryptAndSaveToDisk(storagePath, vault.getVault(), new IvParameterSpec(vault.getIv()), vault.getSalt(), key);
-    }
-
-    /**
-     * Encrypts data and saves it to the disk
-     * @param storagePath path to file
-     * @param data data to be encrypted
-     * @param iv initialization vector
-     * @param salt salt
-     * @param key key
-     * @throws NoSuchPaddingException
-     * @throws InvalidKeyException
-     * @throws NoSuchAlgorithmException
-     * @throws IOException
-     * @throws BadPaddingException
-     * @throws IllegalBlockSizeException
-     * @throws InvalidAlgorithmParameterException
-     */
-    public static void encryptAndSaveToDisk(Path storagePath, Object data, IvParameterSpec iv, byte[] salt,  SecretKey key) throws NoSuchPaddingException, InvalidKeyException, NoSuchAlgorithmException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
-        byte[] encryptedData = encryptData(data, key, iv);
-        byte[] integrity = calculateIntegrity(encryptedData, iv.getIV(), salt, key);
-
-        Storage storage = new Storage(encryptedData, iv.getIV(), salt, integrity);
+    public static void saveStorageToDisk(Path storagePath, Storage storage) throws IOException {
         Utils.createStorage(storagePath);
         Utils.writeObjectToDisk(storagePath, storage);
     }
@@ -256,22 +240,23 @@ public class Utils {
         // Read data from file
         Storage storage = (Storage) Utils.readObjectFromDisk(storagePath);
 
-        // Generate key from master password
-        SecretKey key = Utils.getKeyFromPassword(masterPassword, storage.getSalt());
+        // Generate keys from master password
+        SecretKey aesKey = Utils.getKeyFromPassword("AES", masterPassword, storage.getKeySalt());
+        SecretKey hmacKey = Utils.getKeyFromPassword("HmacSHA256", masterPassword, storage.getHmacSalt());
 
         // Check the integrity of the file
-        byte[] integrity = Utils.calculateIntegrity(storage.getVault(), storage.getIv(), storage.getSalt(), key);
+        byte[] integrity = Utils.calculateIntegrity(storage.getVault(), storage.getIv(), storage.getKeySalt(), storage.getHmacSalt(), hmacKey);
         if (!Arrays.equals(integrity, storage.getIntegrity())) {
             System.out.println("Wrong master password!");
             System.exit(1);
         }
 
         // Decrypt data
-        byte[] decryptedData = Utils.decryptData(storage.getVault(), key, new IvParameterSpec(storage.getIv()));
+        byte[] decryptedData = Utils.decryptData(storage.getVault(), aesKey, new IvParameterSpec(storage.getIv()));
 
         // Get vault from decrypted data
         HashMap<String, String> vault = Utils.getVaultFromByteArray(decryptedData);
 
-        return new Vault(vault, storage.getIv(), storage.getSalt(), integrity);
+        return new Vault(vault, storage.getIv(), storage.getKeySalt(), storage.getHmacSalt(), integrity);
     }
 }

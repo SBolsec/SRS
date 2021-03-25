@@ -1,5 +1,6 @@
 package me.sbolsec.pwdmgr;
 
+import me.sbolsec.pwdmgr.data.Storage;
 import me.sbolsec.pwdmgr.data.Vault;
 
 import javax.crypto.*;
@@ -29,12 +30,21 @@ public class Main {
      */
     public static void init(String masterPassword) throws NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchPaddingException, IOException {
         // Generate needed values
-        byte[] salt = Utils.generateSalt();
+        byte[] keySalt = Utils.generateSalt();
+        byte[] hmacSalt = Utils.generateSalt();
         IvParameterSpec iv = Utils.generateIv();
-        SecretKey key = Utils.getKeyFromPassword(masterPassword, salt);
+        SecretKey aesKey = Utils.getKeyFromPassword("AES", masterPassword, keySalt);
+        SecretKey hmacKey = Utils.getKeyFromPassword("HmacSHA256", masterPassword, hmacSalt);
 
-        // initialize the storage with an empty map and save it on the disk
-        Utils.encryptAndSaveToDisk(storagePath, new HashMap<String, String>(), iv, salt, key);
+        // encrypt data
+        byte[] encryptedData = Utils.encryptData(new HashMap<String, String>(), aesKey, iv);
+
+        // calculate integrity
+        byte[] integrity = Utils.calculateIntegrity(encryptedData, iv.getIV(), keySalt, hmacSalt, hmacKey);
+
+        // save the storage to the disk
+        Storage storage = new Storage(encryptedData, iv.getIV(), keySalt, hmacSalt, integrity);
+        Utils.saveStorageToDisk(storagePath, storage);
 
         System.out.println("Password manager initialized.");
     }
@@ -54,12 +64,21 @@ public class Main {
         vault.getVault().put(address, password);
 
         // Generate needed values
-        byte[] salt = Utils.generateSalt();
+        byte[] keySalt = Utils.generateSalt();
+        byte[] hmacSalt = Utils.generateSalt();
         IvParameterSpec iv = Utils.generateIv();
-        SecretKey key = Utils.getKeyFromPassword(masterPassword, salt);
+        SecretKey aesKey = Utils.getKeyFromPassword("AES", masterPassword, keySalt);
+        SecretKey hmacKey = Utils.getKeyFromPassword("HmacSHA256", masterPassword, hmacSalt);
 
-        // encrypt the vault and save it do disk
-        Utils.encryptAndSaveToDisk(storagePath, vault.getVault(), iv, salt, key);
+        // encrypt data
+        byte[] encryptedData = Utils.encryptData(vault.getVault(), aesKey, iv);
+
+        // calculate integrity
+        byte[] integrity = Utils.calculateIntegrity(encryptedData, iv.getIV(), keySalt, hmacSalt, hmacKey);
+
+        // save the storage to the disk
+        Storage storage = new Storage(encryptedData, iv.getIV(), keySalt, hmacSalt, integrity);
+        Utils.saveStorageToDisk(storagePath, storage);
 
         System.out.println("Stored password for " + address);
     }
