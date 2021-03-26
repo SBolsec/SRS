@@ -1,0 +1,78 @@
+Sustav zaštite temelji se na AES-u i funkciji za derivaciju ključa "PBKDF2WithHmacSHA256".
+
+===========================
+===     KRIPTIRANJE     ===
+===========================
+
+Na početku postupka zaštite generiraju se inicijalizacijski vektor, dvije soli pomoću kriptografskog generatora slučajnih brojeva,
+te dva tajna ključa koristeći funkciju za derivaciju ključa.
+Generiraju se dvije soli i dva ključa zato što se jedan par koristi za šifriranje baze adresa i zaporka, dok se drugi par koristi
+kod izračuna integriteta pomoću HMAC-a
+
+Nakon što se generiraju ti podatci slijedi kriptiranje baze adresa i zaporka (kod init-a stvara se prazna mapa u ovu svrhu).
+Prvo se uzima baza koja je predstavljena mapom, ta mapa se pretvara u polje okteta koje se zatim kriptira.
+Kriptiranje se provodi algoritmom "AES/CBC/PKCS5Padding" koji koristi prethodno generirani ključ, sol i inicijalizacijski vektor
+te vraća kriptirano polje okteta.
+
+Sada slijedi izračun integriteta podataka. Kod izračuna integriteta koristi se algoritam "HmacSHA256". Ovdje se koristi drugi par
+soli i tajnog ključa. Podatci nad kojima se izračunava integritet su slijedom: kriptirano polje okteta dobiveno šifriranjem baze
+adresa i zaporka, inicijalizacijski vektor korišten kod kriptiranja baze, sol koja je korištena kod kriptiranja baze te sol koja
+je korištena kod izračuna integriteta.
+
+Nakon toga svi ti podatci se spremaju na disk u novu datoteku naziva ".storage" u tekućem kazalu. 
+Redom ti podatci su: kriptirano polje okteta dobiveno šifriranjem baze, inicijalizacijski vektor korišten kod kriptiranja baze, 
+sol koja je korištena kod kriptiranja baze, sol koja je korištena kod izračuna integriteta te prethodno izračunati integritet.
+Kod spremanja koristi se razred ObjectOutputStream omogućava lakše spremanje objekata na disk, te njihovo ponovno čitanje s diska.
+U tu svrhu ObjectOutputStream formatira datoteku na način kako bi mogao rekonstruirati zapisani objekt prilikom čitanja te dodaje
+"header" kako bi mogao to ostvariti.
+
+
+Time je završen postupak kriptiranja i spremanja podataka na disk.
+Slijedi opis čitanja tih podataka.
+
+
+===========================
+===    DEKRIPTIRANJE    ===
+===========================
+
+Prvo se pomoću ObjectInputStream-a pročita objekt s diska. Budući da ObjectOutputStream prilikom pisanja formatira datoteku na određen
+način i dodaje header, čak se već i ovdje može vidjeti da li je netko prčkao po datoteci jer ObjectInputStream neće biti u stanju
+pročitati objekt iz datoteke (ovo neće prepoznati da li su promijenjeni konkretni podatci).
+
+Nakon što je učitan objekt s diska izračunavaju se dva ključa koristeći funkciju za derivaciju ključa.
+Jedan ključ se koristi za dekriptiranje podataka pomoću algoritma "AES", dok se drugi ključ koristi za izračun integriteta
+pomoću algoritma "HmacSHA256". Ti ključevi stvaraju se pomoću funkcije za derivaciju ključa pomoću glavne zaporke i soli
+pročitanih s diska.
+
+Kada su generirani ključevi, računa se integritet podataka pročitanih s diska. Koristi se isti algoritam kao što je prethodno opisan,
+samo što se sada koriste podatci pročitani s diska. Podatci su: kriptirano polje okteta baze, inicijalizacijski vektor, sol za kriptiranje,
+sol za integritet te novo stvoreni ključ za provjeru integriteta. Nakon toga uspoređuje se upravo izračunati integritet s integritetom
+pročitanim s diska, ako se razlikuju ispisuje se greška i program prestaje s radom, ako su jednaki program nastavlja s radom i slijedi 
+dekriptiranje polja okteta baze. Za to se koristi algoritam "AES" kojem se predaju generirani ključ za dekriptiranje, inicijalizacijski
+vektor pročitan s diska te kriptirano polje okteta baze. Nakon dekripcije, polje dekriptiranih okteta baze pretvara se u mapu 
+adresa i zaporki.
+
+
+Ovime završava opis čitanja, provjere integriteta i dekriptiranja podataka s diska.
+
+===========================
+=== SIGURNOSNI ZAHTJEVI ===
+===========================
+
+1. Povjerljivost zaporki && 2. Povjerljivost  adresa
+
+Povjerljivost adresa i zaporka ostvaruje se kriptiranjem algoritmom "AES" u "CBC" načinu rada.
+Cijela baza adresa i zaporka pretvara se u polje okteta te se to polje kriptira pomoću ključa dobivenog koristeći funkciju za derivaciju ključa
+i inicijalizacijskog vektora dobivenog kriptografskim generatorom slučajnih brojeva.
+Budući da se cijela baza kriptira od jednom su zadovoljeni navedeni sigurnosni zahtjevi.
+Naime recimo da se zapisi kriptiraju zasebno, ako bi se kod svakog koristio isti ključ bili bi moguće vidjeti jednake zaporke jer bi postupkom
+kriptiranja postale jednake. Slično također vrijedi i za informaciju je li nova zaporka jednaka staroj kada se promijeni.
+Ove probleme rješava kriptiranje cijele baze odjednom, na ovaj način nije moguće utvrditi jesu li dvije zaporke jednake, njihovu duljinu, čak
+nije ni moguće odrediti koliko zapisa postoji u bazi (zbog toga što napadač ne zna duljine adresa i zaporka pa ne može točno odrediti koliko ih ima).
+
+3. Integritet adresa i zaporki
+
+Integritet se rješava tako da se prije spremanja baze na disk računa kod za integritet pomoću "HmacSHA256" koji se sprema zajedno s podatcima
+na disk te se prilikom čitanja nanovo računa integritet pročitanih podataka i uspoređuje sa spremljenim integritetom.
+Detaljniji postupak je prethodno opisan.
+Također je važno napomenuti da se kod izračuna integriteta koristi drugačija sol i ključ nego kod kriptiranja podataka.
