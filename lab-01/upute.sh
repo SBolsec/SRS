@@ -50,14 +50,14 @@ case "$1" in
   ;;
 "put")
   if [ "$#" -ne 4 ]; then
-    echo "Za naredbu init potrebno je predati glavnu zaporku, adresu te zaporku!"
+    echo "Za naredbu put potrebno je predati glavnu zaporku, adresu te zaporku!"
     exit 1
   fi
   java -cp target/classes srs.lab1.Main put "$2" "$3" "$4"
   ;;
 "get")
   if [ "$#" -ne 3 ]; then
-    echo "Za naredbu init potrebno je predati glavnu zaporku i adresu!"
+    echo "Za naredbu get potrebno je predati glavnu zaporku i adresu!"
     exit 1
   fi
   java -cp target/classes srs.lab1.Main get "$2" "$3"
