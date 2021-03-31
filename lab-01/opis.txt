@@ -76,3 +76,12 @@ Integritet se rješava tako da se prije spremanja baze na disk računa kod za in
 na disk te se prilikom čitanja nanovo računa integritet pročitanih podataka i uspoređuje sa spremljenim integritetom.
 Detaljniji postupak je prethodno opisan.
 Također je važno napomenuti da se kod izračuna integriteta koristi drugačija sol i ključ nego kod kriptiranja podataka.
+
+===========================
+===        UPUTE        ===
+===========================
+
+Program se pokrece skriptom upute.sh
+Ako se ne predaju argumenti skripta se izvodi u demonstracijskom načinu rada.
+Ako se predaju argumenti prema primjeru iz pdf-a zadatka laboratorijske vježbe izvršava se ta naredba.
+Detaljnije je opisano komentarima u samoj skripti.
