@@ -50,13 +50,10 @@ public class Utils {
      * @return password
      */
     public static String readConfirmedPasswordFromConsole() {
-        Scanner sc = new Scanner(System.in);
+        Console cons = System.console();
 
-        System.out.print("Password: ");
-        String password = sc.nextLine();
-        System.out.print("Repeat Password: ");
-        String repeatedPassword = sc.nextLine();
-        sc.close();
+        String password = String.valueOf(cons.readPassword("Password: "));
+        String repeatedPassword = String.valueOf(cons.readPassword("Repeat Password: "));
 
         if (!password.equals(repeatedPassword))
             throw new IllegalArgumentException("Password mismatch.");

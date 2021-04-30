@@ -22,12 +22,14 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-crypto</artifactId>
 			<version>5.4.6</version>
+			<scope>compile</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.beust</groupId>
 			<artifactId>jcommander</artifactId>
 			<version>1.81</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 </project>

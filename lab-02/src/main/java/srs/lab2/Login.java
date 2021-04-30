@@ -5,7 +5,6 @@ import srs.lab2.data.User;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Scanner;
 
 /**
  * Tool for login.
@@ -28,10 +27,8 @@ public class Login {
         User user = users.get(args[0]);
 
         boolean loggedIn = false;
-        Scanner sc = new Scanner(System.in);
         for (int i = 0; i < 3; i++) {
-            System.out.print("Password: ");
-            String password = sc.nextLine();
+            String password = String.valueOf(System.console().readPassword("Password: "));
             if (BCrypt.checkpw(password, user.getPassword())) {
                 loggedIn = true;
                 break;
@@ -39,13 +36,17 @@ public class Login {
                 System.out.println("Username or password incorrect.");
             }
         }
-        sc.close();
 
         if (!loggedIn) {
             System.exit(1);
         }
 
-        //TODO: check for forced password change
+        if (user.isForcePasswordChange()) {
+            String password = Utils.getConfirmedPasswordFromConsole("Password change failed. Password mismatch.");
+            String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
+            user.setPassword(hashedPassword);
+            Utils.saveUsers(users);
+        }
 
         System.out.println("Login successful.");
     }

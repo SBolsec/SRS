@@ -11,6 +11,8 @@ public class User implements Serializable {
     String username;
     /** Password. */
     String password;
+    /** Flag whether user will be forced to change password on next login. */
+    boolean forcePasswordChange;
 
     /**
      * Constructor.
@@ -18,8 +20,19 @@ public class User implements Serializable {
      * @param password password of this user
      */
     public User(String username, String password) {
+        this(username, password, false);
+    }
+
+    /**
+     * Constructor.
+     * @param username username of this user
+     * @param password password of this user
+     * @param forcePasswordChange flag whether user will be forced to change password
+     */
+    public User(String username, String password, boolean forcePasswordChange) {
         this.username = username;
         this.password = password;
+        this.forcePasswordChange = forcePasswordChange;
     }
 
     /**
@@ -36,6 +49,30 @@ public class User implements Serializable {
      */
     public String getPassword() {
         return password;
+    }
+
+    /**
+     * Sets the password.
+     * @param password password
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * Returns force password change flag.
+     * @return force password change flag
+     */
+    public boolean isForcePasswordChange() {
+        return forcePasswordChange;
+    }
+
+    /**
+     * Sets force password change flag.
+     * @param forcePasswordChange value which to set
+     */
+    public void setForcePasswordChange(boolean forcePasswordChange) {
+        this.forcePasswordChange = forcePasswordChange;
     }
 
     /**

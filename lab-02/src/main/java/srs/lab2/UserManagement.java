@@ -83,8 +83,11 @@ public class UserManagement {
      */
     private static void forcePasswordChange(String username) throws IOException, ClassNotFoundException {
         Map<String, User> users = Utils.loadUsers();
-        //TODO: force password change
-        Utils.saveUsers(users);
+        User user = users.get(username);
+        if (user != null) {
+            user.setForcePasswordChange(true);
+            Utils.saveUsers(users);
+        }
 
         System.out.println("User will be requested to change password on next login.");
     }
