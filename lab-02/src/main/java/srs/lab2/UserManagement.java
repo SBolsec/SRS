@@ -48,7 +48,9 @@ public class UserManagement {
      * @throws ClassNotFoundException if the file on the disk has been tampered
      */
     private static void addUser(String username) throws IOException, ClassNotFoundException {
-        String password = Utils.getConfirmedPasswordFromConsole("User add failed. Password mismatch.");
+        String password = Utils.getConfirmedPasswordFromConsole(
+                "Password", "Repeat Password",
+                "User add failed. Password mismatch.");
 
         Map<String, User> users = Utils.loadUsers();
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
@@ -65,7 +67,9 @@ public class UserManagement {
      * @throws ClassNotFoundException if the file on the disk has been tampered
      */
     private static void changeUserPassword(String username) throws IOException, ClassNotFoundException {
-        String password = Utils.getConfirmedPasswordFromConsole("Password change failed. Password mismatch.");
+        String password = Utils.getConfirmedPasswordFromConsole(
+                "Password", "Repeat Password",
+                "Password change failed. Password mismatch.");
 
         Map<String, User> users = Utils.loadUsers();
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));

@@ -29,7 +29,7 @@ public class Login {
         boolean loggedIn = false;
         for (int i = 0; i < 3; i++) {
             String password = String.valueOf(System.console().readPassword("Password: "));
-            if (BCrypt.checkpw(password, user.getPassword())) {
+            if (user != null && BCrypt.checkpw(password, user.getPassword())) {
                 loggedIn = true;
                 break;
             } else {
@@ -42,7 +42,9 @@ public class Login {
         }
 
         if (user.isForcePasswordChange()) {
-            String password = Utils.getConfirmedPasswordFromConsole("Password change failed. Password mismatch.");
+            String password = Utils.getConfirmedPasswordFromConsole(
+                    "New password: ", "Repeat new password",
+                    "Password change failed. Password mismatch.");
             String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
             user.setPassword(hashedPassword);
             Utils.saveUsers(users);

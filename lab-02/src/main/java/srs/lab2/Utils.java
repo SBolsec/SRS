@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 /**
  * Utility functions
@@ -49,11 +48,11 @@ public class Utils {
      * Reads password from console that has to be repeated for confirmation.
      * @return password
      */
-    public static String readConfirmedPasswordFromConsole() {
+    public static String readConfirmedPasswordFromConsole(String prompt1, String prompt2) {
         Console cons = System.console();
 
-        String password = String.valueOf(cons.readPassword("Password: "));
-        String repeatedPassword = String.valueOf(cons.readPassword("Repeat Password: "));
+        String password = String.valueOf(cons.readPassword(prompt1));
+        String repeatedPassword = String.valueOf(cons.readPassword(prompt2));
 
         if (!password.equals(repeatedPassword))
             throw new IllegalArgumentException("Password mismatch.");
@@ -67,9 +66,9 @@ public class Utils {
      * @param errorMessage error message to write
      * @return password
      */
-    public static String getConfirmedPasswordFromConsole(String errorMessage) {
+    public static String getConfirmedPasswordFromConsole(String prompt1, String prompt2, String errorMessage) {
         try {
-            return readConfirmedPasswordFromConsole();
+            return readConfirmedPasswordFromConsole(prompt1, prompt2);
         } catch (Exception e) {
             System.out.println(errorMessage);
             System.exit(1);
