@@ -46,20 +46,6 @@ public class Utils {
     }
 
     /**
-     * Reads password from console.
-     * @return password
-     */
-    public static String readPasswordFromConsole() {
-        Scanner sc = new Scanner(System.in);
-
-        System.out.print("Password: ");
-        String password = sc.nextLine();
-        sc.close();
-
-        return password;
-    }
-
-    /**
      * Reads password from console that has to be repeated for confirmation.
      * @return password
      */

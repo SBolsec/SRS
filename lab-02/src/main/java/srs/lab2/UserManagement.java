@@ -25,6 +25,8 @@ public class UserManagement {
     /**
      * Starting point of user management tool.
      * @param args command line arguments
+     * @throws IOException if there is an error while reading or writing to disk
+     * @throws ClassNotFoundException if the file on the disk has been tampered
      */
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         UserManagement main = new UserManagement();
