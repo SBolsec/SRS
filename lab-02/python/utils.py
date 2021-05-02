@@ -4,6 +4,7 @@ import pickle
 
 STORAGE_PATH = "./.storage.pkl"
 
+
 def save_users(users):
     with open(STORAGE_PATH, "wb") as fp:
         pickle.dump(users, fp)
@@ -28,4 +29,3 @@ def get_confirmed_pass(repeat=1, prompt1="Password: ", prompt2="Repeat Password:
         repeat -= 1
 
     return p1 if p1 == p2 else None
-
