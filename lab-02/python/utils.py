@@ -2,15 +2,18 @@ import getpass
 from os import path
 import pickle
 
+
 STORAGE_PATH = "./.storage.pkl"
 
 
 def save_users(users):
+    """Saves given users dictionary to disk."""
     with open(STORAGE_PATH, "wb") as fp:
         pickle.dump(users, fp)
 
 
 def load_users():
+    """Loads users dictionary from disk."""
     if path.exists(STORAGE_PATH) is False:
         return {}
 
@@ -19,6 +22,7 @@ def load_users():
 
 
 def get_confirmed_pass(repeat=1, prompt1="Password: ", prompt2="Repeat Password: "):
+    """Prompts user to write password and confirm it be repeating it."""
     pprompt = lambda: (getpass.getpass(prompt1), getpass.getpass(prompt2))
 
     p1, p2 = pprompt()
