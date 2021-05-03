@@ -39,6 +39,11 @@ def main():
             print("Password change failed. Password mismatch.")
             return
 
+        # check password length
+        if len(password) < 8:
+            print("Password must be at least 8 characters long.")
+            return
+
         # store new hashed password to disk
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user.password = hashed_password

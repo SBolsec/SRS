@@ -22,6 +22,11 @@ def add_user(username):
         print("Password mismatch.")
         return
 
+    # check password length
+    if len(password) < 8:
+        print("Password must be at least 8 characters long.")
+        return
+
     # store hashed password
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     users[username] = User(username, hashed_password)
@@ -45,6 +50,11 @@ def change_user_password(username):
     password = utils.get_confirmed_pass()
     if password is None:
         print("Password mismatch")
+        return
+
+    # check password length
+    if len(password) < 8:
+        print("Password must be at least 8 characters long.")
         return
 
     # store hashed password
