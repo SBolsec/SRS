@@ -1,0 +1,41 @@
+Sustav radi tako da se za svaku lozinku računa njen sažetak pomoću kriptografske funkcije sažetka "Bcrypt".
+Kod hash-iranja za svaku lozinku stvara se nova slučajna vrijednost "salt". Umjesto lozinke na disk se
+sprema rezultat funkcije izračuna sažetka koji u sebi sprema generiranu slučajnu vrijednost "salt".
+
+Kod prijave korisnik unosi lozinku. Sustav dohvaća spremljeni sažetak lozinke tog korisnika s diska.
+Koristeći istu slučajnu vrijednost "salt" kao kod spremljenog sažetka, računa se sažetak lozinke koja je
+unesena kod prijave. Nakon toga uspoređuju se izračunati sažetak sa sažetkom koji je spremljen na disku,
+ako su jednaki, unesena lozinka je ispravna i prijava je uspješna, suprotno ako sažetci nisu jednaki,
+unesena lozinka nije ispravna te prijava nije uspješna.
+
+Za generiranje slučajne vrijednost "salt" koristi se generator ugrađen u paketu "bcrypt" koji koristi 12 rundi.
+
+Tajnost lozinki je osigurana jer se ne spremaju lozinke nego sažetci lozinka. Također zato što se kod svake lozinke
+koristi nova slučajna vrijednost "salt" te nije moguće vidjeti dva ista sažetka pa saznati da su korištene iste lozinke.
+
+Lozinke moraju biti minimalne duljine od 8 znakova što povećava kompleksnost od napada pokušavanjem izračuna svih
+vrijednosti sažetka za određen "salt".
+
+Kod kompleksnosti lozinke u prezentaciji se spominje da se definira skup znakova iz kojeg se kreira lozinka te
+minimalan broj različitih vrsta znakova. Ovo nije implementirano jer često je slučaj da kada se na korisnike
+postavljaju ovakva ograničenja da to vodi do lozinki koje su teško pamtljive te se zapišu na neki papirić
+što je, po mojoj procjeni, veća ranjivost.
+
+U prezentaciji se spominju zaštite gdje se nakon svakog neuspjelog pokušaja upisivanja lozinke povećava vrijeme čekanja,
+da se nakon određenog broja neuspjelih pokušaja korisnik blokira i da se periodički traži promjena lozinku, te zaštite 
+nisu implementirane u ovim alatima. Razlog tome je što datoteka koja sprema korisničke račune na disk nije kriptirana te 
+ako bi se u njoj spremali podatci pomoću kojih bi se ostvarile ove zaštite, napadač bi mogao jednostavno promijeniti te 
+vrijednosti u toj datoteci te na jednostavan način zaobići te zaštite.
+
+===========================
+===        UPUTE        ===
+===========================
+
+Za pokretanje programa potrebno je instalirati python paket "bcrypt" i njegove ovisnosti.
+Za ovisnosti su dane naredbe u svim shell skriptama ovisno o linux distribuciji.
+
+Upute su također opisane u datoteci "upute.sh".
+Demonstracija programa pokreće se izvođenjem skripte "upute.sh".
+Za oba alata, usermgmt i login, napravljene su skripte "login.sh" i "usermgmt.sh" preko kojih se mogu pokrenuti.
+Alat login prima jedan argument, korisničko ime.
+Alat usermgmt prima dva argumenta, prvi je naredba [add|passwd|forcepass|del], a drugi je korisničko ime.
