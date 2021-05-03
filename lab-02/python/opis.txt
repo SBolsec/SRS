@@ -13,6 +13,8 @@ Za generiranje slučajne vrijednost "salt" koristi se generator ugrađen u paket
 Tajnost lozinki je osigurana jer se ne spremaju lozinke nego sažetci lozinka. Također zato što se kod svake lozinke
 koristi nova slučajna vrijednost "salt" te nije moguće vidjeti dva ista sažetka pa saznati da su korištene iste lozinke.
 
+Kod unosa lozinka u konzoli ne prikazuju se znakovi koje korisnik unosi kako bi se pružala veća sigurnost kod samog unosa.
+
 Lozinke moraju biti minimalne duljine od 8 znakova što povećava kompleksnost od napada pokušavanjem izračuna svih
 vrijednosti sažetka za određen "salt".
 
