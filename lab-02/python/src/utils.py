@@ -38,9 +38,12 @@ def get_confirmed_pass(repeat=1, prompt1="Password: ", prompt2="Repeat Password:
 
 def check_password(password, old_password=None):
     """Checks complexity of new password and whether it is different from the old password if its provided."""
-    # check password length
-    if len(password) < 8:
-        print("Password must be at least 8 characters long.")
+    # check password complexity
+    reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,50}$"
+    pat = re.compile(reg)
+    if not re.search(pat, password):
+        print("Password change failed.")
+        print("Password must be between 8 and 50 characters long, it must contain at least one uppercase Later, one digit and one special character.")
         return False
 
     # check if new password is same as old password

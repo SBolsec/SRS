@@ -15,13 +15,12 @@ koristi nova slučajna vrijednost "salt" te nije moguće vidjeti dva ista sažet
 
 Kod unosa lozinka u konzoli ne prikazuju se znakovi koje korisnik unosi kako bi se pružala veća sigurnost kod samog unosa.
 
-Lozinke moraju biti minimalne duljine od 8 znakova što povećava kompleksnost od napada pokušavanjem izračuna svih
-vrijednosti sažetka za određen "salt".
+Lozinke moraju biti duljine od 8 do 50 znakova. Lozinke se također moraju sastojati od najmanje jednog
+velikog slova, jedne znamenke i jednog specijalnog znaka ([@$!%*#?&]). Ovo povećava kompleksnost lozinki
+te samim time otežava napade pogađanja lozinki.
 
-Kod kompleksnosti lozinke u prezentaciji se spominje da se definira skup znakova iz kojeg se kreira lozinka te
-minimalan broj različitih vrsta znakova. Ovo nije implementirano jer često je slučaj da kada se na korisnike
-postavljaju ovakva ograničenja da to vodi do lozinki koje su teško pamtljive te se zapišu na neki papirić
-što je, po mojoj procjeni, veća ranjivost.
+Ako se prisili korisnika da promijeni lozinku nije mu moguće opet staviti istu lozinku nego mora odabrati neku
+novu lozinku.
 
 U prezentaciji se spominju zaštite gdje se nakon svakog neuspjelog pokušaja upisivanja lozinke povećava vrijeme čekanja,
 da se nakon određenog broja neuspjelih pokušaja korisnik blokira i da se periodički traži promjena lozinku, te zaštite 
