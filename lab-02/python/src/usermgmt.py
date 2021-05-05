@@ -22,9 +22,8 @@ def add_user(username):
         print("Password mismatch.")
         return
 
-    # check password length
-    if len(password) < 8:
-        print("Password must be at least 8 characters long.")
+    # check the complexity of the new password and whether it is different from the current password
+    if not utils.check_password(password):
         return
 
     # store hashed password
@@ -52,9 +51,8 @@ def change_user_password(username):
         print("Password mismatch")
         return
 
-    # check password length
-    if len(password) < 8:
-        print("Password must be at least 8 characters long.")
+    # check the complexity of the new password and whether it is different from the current password
+    if not utils.check_password(password, user.password):
         return
 
     # store hashed password
@@ -100,11 +98,14 @@ def delete_user(username):
 def parse_arguments():
     """Parses command line arguments."""
     parser = argparse.ArgumentParser(description='SRS LAB2')
-    parser.add_argument('--add', nargs=1, type=str, default=None, help='Username of user to add')
-    parser.add_argument('--passwd', nargs=1, type=str, default=None, help='Username of user to change password')
+    parser.add_argument('--add', nargs=1, type=str,
+                        default=None, help='Username of user to add')
+    parser.add_argument('--passwd', nargs=1, type=str,
+                        default=None, help='Username of user to change password')
     parser.add_argument('--forcepass', nargs=1, type=str, default=None,
                         help='Username of user to force password change')
-    parser.add_argument('--delete', nargs=1, type=str, default=None, help='Username of user to delete password')
+    parser.add_argument('--delete', nargs=1, type=str,
+                        default=None, help='Username of user to delete password')
     return parser.parse_args()
 
 

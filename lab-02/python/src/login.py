@@ -34,18 +34,19 @@ def main():
     # check if user is forced to change password
     if user.force_password_change:
         # get new password
-        password = utils.get_confirmed_pass(1, "New password: ", "Repeat new password: ")
+        password = utils.get_confirmed_pass(
+            1, "New password: ", "Repeat new password: ")
         if password is None:
             print("Password change failed. Password mismatch.")
             return
 
-        # check password length
-        if len(password) < 8:
-            print("Password must be at least 8 characters long.")
+        # check the complexity of the new password and whether it is different from the current password
+        if not utils.check_password(password, user.password):
             return
 
         # store new hashed password to disk
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        hashed_password = bcrypt.hashpw(
+            password.encode('utf-8'), bcrypt.gensalt())
         user.password = hashed_password
         user.force_password_change = False
         utils.save_users(users)

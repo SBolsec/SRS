@@ -1,6 +1,8 @@
 import getpass
 from os import path
 import pickle
+import bcrypt
+import re
 
 
 STORAGE_PATH = "./.storage.pkl"
@@ -33,3 +35,17 @@ def get_confirmed_pass(repeat=1, prompt1="Password: ", prompt2="Repeat Password:
         repeat -= 1
 
     return p1 if p1 == p2 else None
+
+def check_password(password, old_password=None):
+    """Checks complexity of new password and whether it is different from the old password if its provided."""
+    # check password length
+    if len(password) < 8:
+        print("Password must be at least 8 characters long.")
+        return False
+
+    # check if new password is same as old password
+    if old_password is not None and bcrypt.checkpw(password.encode('utf-8'), old_password):
+        print("Password change failed. Password can not be same as old password.")
+        return False
+
+    return True
