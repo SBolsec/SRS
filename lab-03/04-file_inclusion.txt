@@ -1,0 +1,13 @@
+U linku sam promijenio query parametar name na sljedeći način:
+  ?page=/etc/passwd
+
+Ovo je rezulitralo "dumpanjem" datoteke na ekran kao što se vidi na priloženoj slici.
+
+Ovakva vrsta napada je moguća jer se ne provjerava što je korisnik unio, te se samo unosi u kod gdje se onda izvršava.
+
+Aplikaciju od ovakve vrste napada bih zaštitio implementacijom nekoliko zaštita:
+- za svaki URL bih dopustio pristup samo autentificiranim i autoriziranim korisnicima
+- koristio bi se princip najmanjih prava te bi se pojedinim ulogama/korisnicima davale dozvole, ostalo bi bilo zabranjeno
+- eliminirale bi se reference u URL-u
+- zamjena s privremenim vrijednostima koje se na poslužitelju preslikavaju u prave
+- provjeriti valjanost reference na objekt (provjera formata parametara, prava pristupa za korisnika, provjera pristupa objektu)
