@@ -1,0 +1,27 @@
+|    Adresa     | Povratna TTL vrijednost | Početna TTL vrijednost |
++---------------+-------------------------+------------------------+
+|  10.4.80.183  |           64            |          64            |
+|  mail.fer.hr  |          123            |         128            |
+|  161.53.19.1  |          251            |         255            |
+|  imunes.net   |           59            |          64            |
+
+U gornjoj tablici povratna TTL vrijednost je vrijednost koju je vratio alat "ping".
+
+Početnu TTL vrijednost dobio sam tako da sam pokrenuo još i alat "traceroute" koji
+ispisuje put kojim paket putuje do odredišta. Kada sam dobio taj put samo sam na broj
+povratne vrijesdnosti dodao broj koraka koje je vratio alat "traceroute".
+
+Na temelju TTL vrijdnosti možemo otprilike odrediti koji operacijski sustav je pokrenut
+na tim računalima. Podatci na koje ću se referencirati u objašnjenju nalaze se na 
+sljedećoj poveznici: https://subinsb.com/default-device-ttl-values/
+
+Pogledom na tablicu prikazanu na danoj poveznici vidi se da dolazi do nekih preklapanja,
+npr. neke verzije Linux kernela koriste 64 dok druge koriste 255, slično se događa kod
+verzija FreeBSD-a, Solaris-a i mnogih drugih te nije moguće dati definitiavn odgovor o
+kojem od njih se radi. Kod Windowsa primjećejemo da uglavnom samo Windows koristi 128.
+
+Uz navedenu napomenu da dolazi do preklapanja, možemo pokušati pogoditi da je 
+situacija sljedeća:
+ - mail.fer.hr koristi Windows operacijski sustav.
+ - Virtualni stroj i imunes.net koriste *nix (Linux/Unix) operacijski sustav.
+ - 161.53.19.1 koristi Solaris/AIX operacijski sustav.
