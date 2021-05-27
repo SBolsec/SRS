@@ -116,6 +116,3 @@ Aplikaciju od ovakve vrste napada bih zaštitio implementacijom nekoliko zaštit
 - eliminirale bi se reference u URL-u
 - zamjena s privremenim vrijednostima koje se na poslužitelju preslikavaju u prave
 - provjeriti valjanost reference na objekt (provjera formata parametara, prava pristupa za korisnika, provjera pristupa objektu)
-
-Tražena slika je na sljedećoj poveznici:
-  https://imgur.com/QhTI69S
