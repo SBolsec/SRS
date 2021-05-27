@@ -54,7 +54,7 @@ koristiti i izraz sličan sljedećem, ovo je moguće jer smo prethodno saznali i
 
 3. Ubacio sam sažetak u mrežni alat "crackstation.net" i kao rezultat dobio lozinku "letmein".
 
-(4.) Probao sam i alat John the Ripper, rezultat je ista očekivano ista lozinka, kod toga koraci su bili sljedeći:
+(4.) Probao sam i alat John the Ripper, rezultat je ista lozinka, kod toga koraci su bili sljedeći:
 4.1 echo "0d107d09f5bbe40cade3de5c71e9e9b7" > "hashes.txt"
 4.2 cd ~srs/srs-lab/Lab3
 4.3 sudo john/run/john --show --format=raw-md5 ~/hashes.txt
