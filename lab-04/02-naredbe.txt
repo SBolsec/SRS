@@ -1,0 +1,7 @@
+watch -n 0.5 netstat -ant
+
+sudo nmap -O 10.4.80.183
+
+sudo nmap -sV 10.4.80.183
+
+sudo nmap -A 10.4.80.183

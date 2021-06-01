@@ -1,0 +1,47 @@
+# Podesavanje na mail-relay 
+
+sudo himage mail-relay
+
+nano /etc/ssh/sshd_config
+
+mkdir -p /root/.ssh
+
+service ssh restart
+
+exit
+
+
+# Podesavanje na mail
+
+sudo himage mail
+
+nano /etc/ssh/sshd_config
+
+mkdir -p /root/.ssh
+
+service ssh restart
+
+exit
+
+
+# Generiranje privatnog ključa
+
+sudo himage pc
+
+ssh-keygen
+
+exit
+
+
+# Kopiranje javnog ključa na mail-relay i mail
+
+sudo hcp pc:/root/.ssh/id_rsa.pub mail-relay:/root/.ssh/pc_rsa.pub
+
+sudo hcp pc:/root/.ssh/id_rsa.pub mail:/root/.ssh/pc_rsa.pub
+
+
+# Spajanje na mail sa pc preko mail-relay
+
+sudo himage pc
+
+ssh -J root@198.51.100.10:1111 root@10.0.1.10 -p 2222

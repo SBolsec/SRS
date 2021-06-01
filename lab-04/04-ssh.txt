@@ -1,0 +1,37 @@
+Prvi korak u rješavanju je bio da dodam potrebne naredbe u datoteke FW.sh i FW_int.sh
+
+Zatim kreće podešavanje poslužitelja mail-relay.
+Naredbom `sudo himage mail-relay` sam se prebacio na poslužitelj.
+Zatim sam sa editorom nano u datoteci /etc/ssh/sshd_config napravio sljedeće izmjene:
+  - `#Port 22` sam odkomentirao i promijenio port na 1111: `Port 1111`
+  - `#PubkeyAuthentication yes` sam odkomentirao
+  - `#AuthorizedKeysFile` sam odkomentirao i dodao sljedeću datoteku u popis `.ssh/pc_rsa.pub`
+Znači, za rezime, nakon promjena dotične linije izgledale su ovako:
+  - `Port 1111`
+  - `PubkeyAuthentication yes`
+  - `AuthorizedKeysFile   .ssh/authorized_keys .ssh/authorized_keys2 .ssh/pc_rsa.pub`
+Nakon ovoga stvorio sam direkotrij /root/.ssh kako bi se javni ključ mogao poslije kopirati u taj direkotrij.
+Nakon konfiguracije ponovno sam pokrenuo ssh servis naredbom `service ssh restart`.
+Time je završeno podešavanje poslužitelja mail-relay te se naredbom `exit` odspajam.
+
+Zatim kreće podešavanje poslužitelja mail.
+Postupak konfiguracije je identičan kao i za poslužitelj mail-relay,
+jedina razlika je što je port promijenjen na 2222 umjesto na 1111.
+
+Sada je potrebno spojiti se na računalo pc narebdom `sudo himage pc`.
+Potrebno je generirati par rsa ključeva, što se postiže naredbom `ssh-keygen`.
+Na upite od alata ostavljam defaultne vrijednosti, osim kod upita za lozinku gdje sam postavio `Internet1`.
+Nakon uspješne generacije ključeva odspajam se sa računala pc naredbom `exit`.
+
+Sada je potrebno javni ključ pc-a iskopirati na mail-relay i mail.
+Za to su iskorištene sljedeće naredbe:
+  - sudo hcp pc:/root/.ssh/id_rsa.pub mail-relay:/root/.ssh/pc_rsa.pub
+  - sudo hcp pc:/root/.ssh/id_rsa.pub mail:/root/.ssh/pc_rsa.pub
+
+Sada je sve spremo te se može isprobati.
+Ponovno se spajamo na računalo pc naredbom `sudo himage pc`.
+Unosi se sljedeća naredba kako bi se testiralo ispravno ponašanje:
+  - ssh -J root@198.51.100.10:1111 root@10.0.1.10 -p 2222
+Kada se ponudi unos opcija yes ili no, potrebno je staviti yes.
+Kada je potrebno unijeti lozinku unosimo `Internet1`.
+Nakon svega ovoga uspješno se sa pc spajamo na mail preko mail-relay.

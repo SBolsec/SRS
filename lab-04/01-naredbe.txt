@@ -5,3 +5,11 @@ ping mail.fer.hr
 ping 161.53.19.1
 
 ping imunes.net
+
+traceroute 10.4.80.183
+
+traceroute mail.fer.hr
+
+traceroute 161.53.19.1
+
+traceroute imunes.net

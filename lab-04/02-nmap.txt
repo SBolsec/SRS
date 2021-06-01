@@ -1,0 +1,26 @@
+Samo je jedan trenutno pokrenuti servis na virtualnom stroju, a to je 
+servis SSH na portu 22/tcp.
+
+Korištenjem zastavice -O za detekciju operacijskog sustava dobivam rezultat da je
+riječ o Linuxu. Konkretno dobivam sljedeći ispis:
+Running: Linux 4.X|5.X
+OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5
+OS details: Linux 4.15 - 5.6
+
+Korištenjem zastavice -sV za detekciju verzija servisa dobivam detaljniji prikaz
+servisa, konkretno za servis SSH na portu 22/tcp dobivam sljedeće podatke o verziji:
+OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+
+Način skeniranja koji je prouzročio promjenu ispisa na virtualnom stroju
+je općeniti scan (zastavica -A). Pojavilo se pet novih redaka kod ispisa.
+Svaka od tih novih 5 konekcija je na virtualnom stroju bila kroz port 22,
+a na host računalu kroz random nekorišteni port te je status kod svih
+konekcija TIME_WAIT.
+
+Kod skeniranja izvana i iznutra ispis re razlikuje po tome što se kod skeniranja
+iznutra stvara nova konekcija. Ta konekcija kao lokalnu adresu ima 127.0.0.1:55296,
+a kao stranu (foreign) adresu 127.0.0.1:22 te status TIME_WAIT.
+
+TIME_WAIT označava da je lokalna krajnja točka (ova strana) zatvorila vezu. 
+Veza se održava tako da se svi odgođeni paketi mogu povezati s vezom i na odgovarajući
+način rukovati njima. Veze će se ukloniti kad isteknu u roku od četiri minute.

@@ -1,0 +1,1 @@
+Dodana su pravila u datoteke FW.sh i FW_int.sh

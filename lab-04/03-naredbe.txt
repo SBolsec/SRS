@@ -1,0 +1,5 @@
+cd ~/srs-lab/Lab4
+
+sudo imunes NETWORK.imn
+
+sudo ./test.sh
